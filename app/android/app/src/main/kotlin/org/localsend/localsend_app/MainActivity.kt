@@ -1,3 +1,4 @@
+// Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation.
 package org.localsend.localsend_app
 
 import android.annotation.SuppressLint
@@ -10,6 +11,9 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Bundle
+import android.os.Handler
+import android.os.ResultReceiver
 import android.provider.DocumentsContract
 import android.provider.Settings
 import android.webkit.MimeTypeMap
@@ -44,6 +48,13 @@ class MainActivity : FlutterActivity() {
     /// replay them through the regular plugin path.
     private val pendingShareIntents = mutableListOf<Intent>()
     private var shareIntentReady = false
+
+    override fun onDestroy() {
+        // The activity owns the receiver engine. Never leave a readiness notification after
+        // Android destroys that engine, even if its task still exists in Recents.
+        stopService(Intent(this, BackgroundReceiveService::class.java))
+        super.onDestroy()
+    }
 
     override fun onNewIntent(intent: Intent) {
         if (!shareIntentReady && (intent.action == Intent.ACTION_SEND || intent.action == Intent.ACTION_SEND_MULTIPLE)) {
@@ -81,6 +92,55 @@ class MainActivity : FlutterActivity() {
             CHANNEL
         ).setMethodCallHandler { call, result ->
             when (call.method) {
+                "setBackgroundReceive" -> {
+                    try {
+                        val serviceIntent = Intent(this, BackgroundReceiveService::class.java)
+                            .putExtra("title", call.argument<String>("title"))
+                            .putExtra("text", call.argument<String>("text"))
+                        if (call.argument<Boolean>("enabled") == true) {
+                            if (!hasLocalNetworkPermission()) {
+                                throw SecurityException("Allow local network access before enabling background receiving.")
+                            }
+                            serviceIntent.putExtra("result", object : ResultReceiver(Handler(mainLooper)) {
+                                override fun onReceiveResult(resultCode: Int, data: Bundle?) {
+                                    if (resultCode == Activity.RESULT_OK) result.success(null)
+                                    else result.error("background_receive", data?.getString("error"), null)
+                                }
+                            })
+                            if (Build.VERSION.SDK_INT >= 26) startForegroundService(serviceIntent)
+                            else startService(serviceIntent)
+                        } else {
+                            stopService(serviceIntent)
+                            result.success(null)
+                        }
+                    } catch (e: Exception) {
+                        result.error("background_receive", e.message, null)
+                    }
+                }
+
+                "openReceiveSoundSettings" -> {
+                    try {
+                        BackgroundReceiveService.openSoundSettings(this)
+                        result.success(null)
+                    } catch (e: Exception) {
+                        result.error("receive_sound_settings", e.message, null)
+                    }
+                }
+
+                "showReceiveRequest" -> {
+                    try {
+                        BackgroundReceiveService.showRequest(this, call.argument<String>("title")!!, call.argument<String>("text")!!)
+                        result.success(null)
+                    } catch (e: Exception) {
+                        result.error("receive_notification", e.message, null)
+                    }
+                }
+
+                "clearReceiveRequest" -> {
+                    BackgroundReceiveService.clearRequest(this)
+                    result.success(null)
+                }
+
                 "pickDirectory" -> {
                     pendingResult = result
                     openDirectoryPicker(onlyPath = false)

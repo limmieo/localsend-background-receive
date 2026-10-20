@@ -1,3 +1,4 @@
+// Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation.
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:localsend_app/config/init.dart';
@@ -10,6 +11,7 @@ import 'package:localsend_app/provider/local_ip_provider.dart';
 import 'package:localsend_app/provider/network/server/server_provider.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
+import 'package:localsend_app/util/native/receive_notifications.dart';
 import 'package:localsend_app/util/ui/dynamic_colors.dart';
 import 'package:localsend_app/widget/watcher/life_cycle_watcher.dart';
 import 'package:localsend_app/widget/watcher/shortcut_watcher.dart';
@@ -62,6 +64,8 @@ class LocalSendApp extends StatelessWidget {
           onChangedState: (AppLifecycleState state) {
             switch (state) {
               case AppLifecycleState.resumed:
+                // ignore: discarded_futures
+                ReceiveNotifications.clearRequest();
                 ref.redux(localIpProvider).dispatch(InitLocalIpAction());
                 if (checkPlatform([TargetPlatform.iOS, TargetPlatform.android])) {
                   // The OS may have invalidated the sockets of the suspended app without any error ever reaching the accept loop.

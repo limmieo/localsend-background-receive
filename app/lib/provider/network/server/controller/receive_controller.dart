@@ -1,3 +1,4 @@
+// Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation.
 import 'dart:async';
 import 'dart:convert';
 import 'package:collection/collection.dart';
@@ -24,6 +25,7 @@ import 'package:localsend_app/provider/selection/selected_sending_files_provider
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/util/native/directories.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
+import 'package:localsend_app/util/native/receive_notifications.dart';
 import 'package:localsend_app/util/native/tray_helper.dart';
 import 'package:localsend_app/widget/dialogs/open_file_dialog.dart';
 import 'package:localsend_isolates/isolate.dart';
@@ -231,7 +233,10 @@ class ReceiveController {
     server.ref.notifier(selectedReceivingFilesProvider).setFiles(files.values.toList());
 
     // ignore: use_build_context_synchronously, unawaited_futures
-    Routerino.context.push(() => ReceivePage(receiveProvider));
+    Routerino.context.pushImmediately(() => ReceivePage(receiveProvider));
+
+    // The request page is already in place when the notification brings the activity back.
+    await ReceiveNotifications.showRequest(sender: server.getState().session!.senderAlias, count: files.length);
   }
 
   /// An accepted file started being uploaded.
@@ -529,6 +534,8 @@ class ReceiveController {
       return;
     }
 
+    unawaited(ReceiveNotifications.clearRequest());
+
     if (fileNameMap.isEmpty) {
       // nothing selected, the Rust server responds with 204 and creates no session
       // This usually happens for message transfers
@@ -687,6 +694,7 @@ class ReceiveController {
     }
 
     TransferNotification.stop(sessionId);
+    unawaited(ReceiveNotifications.clearRequest());
 
     server.setState(
       (oldState) => oldState?.copyWith(
@@ -704,6 +712,7 @@ void _cancelBySender(ServerUtils server) {
   }
 
   TransferNotification.stop(receiveSession.sessionId);
+  unawaited(ReceiveNotifications.clearRequest());
 
   if (receiveSession.status == SessionStatus.waiting) {
     // received cancel during accept/decline

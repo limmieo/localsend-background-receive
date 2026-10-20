@@ -1,3 +1,4 @@
+// Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation.
 import 'dart:convert';
 import 'dart:io';
 
@@ -81,6 +82,7 @@ const _multicastGroupKey = 'ls_multicast_group';
 const _destinationKey = 'ls_destination';
 const _saveToGallery = 'ls_save_to_gallery';
 const _saveToHistory = 'ls_save_to_history';
+const _backgroundReceive = 'ls_background_receive';
 const _quickSave = 'ls_quick_save'; // a QuickSaveMode; was a bool until storage version 2 ('ls_quick_save_from_favorites' is merged into this key)
 const _receivePin = 'ls_receive_pin';
 const _autoFinish = 'ls_auto_finish';
@@ -103,6 +105,12 @@ final persistenceProvider = Provider<PersistenceService>((ref) {
 
 /// This service abstracts the persistence layer.
 class PersistenceService {
+  bool isBackgroundReceive() => _prefs.getBool(_backgroundReceive) ?? false;
+
+  Future<void> setBackgroundReceive(bool enabled) async {
+    await _prefs.setBool(_backgroundReceive, enabled);
+  }
+
   final SharedPreferences _prefs;
   final bool isFirstAppStart;
 

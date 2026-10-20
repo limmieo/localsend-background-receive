@@ -1,3 +1,4 @@
+// Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation.
 import 'dart:async';
 import 'dart:io';
 
@@ -5,6 +6,7 @@ import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/cross_file.dart';
 import 'package:localsend_app/model/state/server/server_state.dart';
 import 'package:localsend_app/model/state/server/web_share_state.dart';
+import 'package:localsend_app/provider/background_receive_provider.dart';
 import 'package:localsend_app/provider/network/server/controller/receive_controller.dart';
 import 'package:localsend_app/provider/network/server/controller/send_controller.dart';
 import 'package:localsend_app/provider/network/server/server_utils.dart';
@@ -101,11 +103,13 @@ class ServerService extends Notifier<ServerState?> {
   /// Starts the server from user settings.
   Future<ServerState?> startServerFromSettings() async {
     final settings = ref.read(settingsProvider);
-    return startServer(
+    final result = await startServer(
       alias: settings.alias,
       port: settings.port,
       https: settings.https,
     );
+    await ref.notifier(backgroundReceiveProvider).restore();
+    return result;
   }
 
   /// Starts the server.
@@ -228,6 +232,7 @@ class ServerService extends Notifier<ServerState?> {
 
   Future<void> stopServer() async {
     _logger.info('Stopping server...');
+    await ref.notifier(backgroundReceiveProvider).suspend();
     await _subscription?.cancel();
     _subscription = null;
     await ref.redux(parentIsolateProvider).dispatchAsync(IsolateHttpServerStopAction());
@@ -247,7 +252,9 @@ class ServerService extends Notifier<ServerState?> {
     WebShareState? web,
   }) async {
     await stopServer();
-    return await startServer(alias: alias, port: port, https: https, web: web);
+    final result = await startServer(alias: alias, port: port, https: https, web: web);
+    await ref.notifier(backgroundReceiveProvider).restore();
+    return result;
   }
 
   Future<void> acceptFileRequest(Map<String, String> fileNameMap) async {

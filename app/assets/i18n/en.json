@@ -1,5 +1,19 @@
 {
+  "@backgroundReceive": {
+    "description": "Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation."
+  },
   "appName": "LocalSend",
+  "backgroundReceive": {
+    "setting": "Receive in background",
+    "sound": "Incoming notification sound",
+    "chooseSound": "Choose sound",
+    "description": "Keep LocalSend reachable while using other apps or locking the screen. Incoming requests notify you; tap to accept or decline. Uses more battery. Reopen LocalSend after removing it from Recents or restarting your phone.",
+    "ready": "Ready to receive · Tap to open LocalSend",
+    "incoming": "Incoming request from {sender}",
+    "review": "{count} item(s) · Tap to review",
+    "permissionRequired": "Allow notifications in Android settings to enable background receiving.",
+    "openApp": "Open LocalSend to enable background receiving."
+  },
   "general": {
     "accept": "Accept",
     "accepted": "Accepted",

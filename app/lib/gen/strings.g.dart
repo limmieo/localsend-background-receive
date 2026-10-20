@@ -1,10 +1,11 @@
+// Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation.
 /// Generated file. Do not edit.
 ///
 /// Source: assets/i18n
 /// To regenerate, run: `dart run slang`
 ///
 /// Locales: 59
-/// Strings: 21531 (364 per locale)
+/// Strings: 21540 (365 per locale)
 
 // coverage:ignore-file
 // ignore_for_file: type=lint, unused_import

@@ -1,3 +1,4 @@
+// Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:localsend_app/config/theme.dart';
@@ -8,6 +9,7 @@ import 'package:localsend_app/pages/changelog_page.dart';
 import 'package:localsend_app/pages/donation/donation_page.dart';
 import 'package:localsend_app/pages/settings/network_interfaces_page.dart';
 import 'package:localsend_app/pages/tabs/settings_tab_controller.dart';
+import 'package:localsend_app/provider/background_receive_provider.dart';
 import 'package:localsend_app/provider/network/server/server_provider.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/provider/version_provider.dart';
@@ -18,6 +20,8 @@ import 'package:localsend_app/util/native/device_info_helper.dart';
 import 'package:localsend_app/util/native/macos_channel.dart';
 import 'package:localsend_app/util/native/pick_directory_path.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
+import 'package:localsend_app/util/native/receive_notifications.dart';
+import 'package:localsend_app/util/ui/snackbar.dart';
 import 'package:localsend_app/widget/custom_dropdown_button.dart';
 import 'package:localsend_app/widget/dialogs/encryption_disabled_notice.dart';
 import 'package:localsend_app/widget/dialogs/pin_dialog.dart';
@@ -43,6 +47,7 @@ class SettingsTab extends StatelessWidget {
       provider: (ref) => settingsTabControllerProvider,
       builder: (context, vm) {
         final ref = context.ref;
+        final backgroundReceive = ref.watch(backgroundReceiveProvider);
         return ResponsiveListView(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 40),
           children: [
@@ -160,6 +165,34 @@ class SettingsTab extends StatelessWidget {
             _SettingsSection(
               title: t.settingsTab.receive.title,
               children: [
+                if (checkPlatform([TargetPlatform.android]))
+                  _BooleanEntry(
+                    label: t.backgroundReceive.setting,
+                    description: t.backgroundReceive.description,
+                    value: backgroundReceive,
+                    onChanged: (enabled) async {
+                      try {
+                        if (enabled && ref.read(serverProvider) == null) {
+                          await ref.notifier(serverProvider).startServerFromSettings();
+                        }
+                        await ref.notifier(backgroundReceiveProvider).setEnabled(enabled);
+                      } catch (e) {
+                        if (context.mounted) context.showSnackBar(e.toString());
+                      }
+                    },
+                  ),
+                if (checkPlatform([TargetPlatform.android]))
+                  _ButtonEntry(
+                    label: t.backgroundReceive.sound,
+                    buttonLabel: t.backgroundReceive.chooseSound,
+                    onTap: () async {
+                      try {
+                        await ReceiveNotifications.openSoundSettings();
+                      } catch (e) {
+                        if (context.mounted) context.showSnackBar(e.toString());
+                      }
+                    },
+                  ),
                 _BooleanEntry(
                   label: t.settingsTab.receive.quickSave,
                   value: vm.settings.quickSave,

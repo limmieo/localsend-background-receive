@@ -1,3 +1,4 @@
+// Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation.
 ///
 /// Generated file. Do not edit.
 ///
@@ -46,6 +47,9 @@ class Translations with BaseTranslations<AppLocale, Translations> {
   /// en: 'LocalSend'
   String get appName => 'LocalSend';
 
+  /// Modified by Tony Destin (limmieo), 2026: Android background receiving and incoming notification controls; AI-assisted implementation.
+  late final Translations$backgroundReceive$en backgroundReceive = Translations$backgroundReceive$en.internal(_root);
+
   late final Translations$general$en general = Translations$general$en.internal(_root);
   late final Translations$receiveTab$en receiveTab = Translations$receiveTab$en.internal(_root);
   late final Translations$sendTab$en sendTab = Translations$sendTab$en.internal(_root);
@@ -73,6 +77,43 @@ class Translations with BaseTranslations<AppLocale, Translations> {
   late final Translations$tray$en tray = Translations$tray$en.internal(_root);
   late final Translations$web$en web = Translations$web$en.internal(_root);
   late final Translations$assetPicker$en assetPicker = Translations$assetPicker$en.internal(_root);
+}
+
+// Path: backgroundReceive
+class Translations$backgroundReceive$en {
+  Translations$backgroundReceive$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Receive in background'
+  String get setting => 'Receive in background';
+
+  /// en: 'Incoming notification sound'
+  String get sound => 'Incoming notification sound';
+
+  /// en: 'Choose sound'
+  String get chooseSound => 'Choose sound';
+
+  /// en: 'Keep LocalSend reachable while using other apps or locking the screen. Incoming requests notify you; tap to accept or decline. Uses more battery. Reopen LocalSend after removing it from Recents or restarting your phone.'
+  String get description =>
+      'Keep LocalSend reachable while using other apps or locking the screen. Incoming requests notify you; tap to accept or decline. Uses more battery. Reopen LocalSend after removing it from Recents or restarting your phone.';
+
+  /// en: 'Ready to receive · Tap to open LocalSend'
+  String get ready => 'Ready to receive · Tap to open LocalSend';
+
+  /// en: 'Incoming request from {sender}'
+  String incoming({required Object sender}) => 'Incoming request from ${sender}';
+
+  /// en: '{count} item(s) · Tap to review'
+  String review({required Object count}) => '${count} item(s) · Tap to review';
+
+  /// en: 'Allow notifications in Android settings to enable background receiving.'
+  String get permissionRequired => 'Allow notifications in Android settings to enable background receiving.';
+
+  /// en: 'Open LocalSend to enable background receiving.'
+  String get openApp => 'Open LocalSend to enable background receiving.';
 }
 
 // Path: general
